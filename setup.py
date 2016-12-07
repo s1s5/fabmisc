@@ -10,5 +10,5 @@ setup(
     author=__author__,
     keywords='fabric',
     packages=find_packages(),
-    install_requires=['fabtools'],
+    install_requires=[x.strip() for x in open('requirements').readlines()],
 )
