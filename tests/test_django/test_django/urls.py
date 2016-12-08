@@ -16,6 +16,13 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from django.http.response import HttpResponse
+
+
+def return_hello(*args, **kw):
+    return HttpResponse("hello world")
+
 urlpatterns = [
+    url(r'^hello/', return_hello),
     url(r'^admin/', admin.site.urls),
 ]
