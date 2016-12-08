@@ -1,6 +1,9 @@
 # coding: utf-8
 from setuptools import setup, find_packages
-from fabmisc import __author__, __version__, __license__
+
+__author__ = 'Shogo Sawai'
+__version__ = '0.0.2'
+__license__ = 'MIT'
 
 setup(
     name='fabmisc',

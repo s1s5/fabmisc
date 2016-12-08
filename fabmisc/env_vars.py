@@ -24,7 +24,7 @@ class EnvVars(ManagedTask):
             items.append((i, self.dictionary()[i]))
 
         upload_template(
-            'env_vars.sh.j2', '~/.env_vars/{}'.format(self.filename()),
+            'env_vars.sh', '~/.env_vars/{}'.format(self.filename()),
             context=dict(
                 prefix=self.prefix(),
                 items=items,

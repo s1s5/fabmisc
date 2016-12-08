@@ -29,13 +29,13 @@ class GitBucket(ManagedTask):
                  nginx=None, plugins=dict(), *args, **kw):
         super(GitBucket, self).__init__(*args, **kw)
         self.gitbucket_home = '/usr/share/{}/.gitbucket'.format(
-            tomcat.service_name)
+            tomcat.name)
         self.version = version
         self.tomcat = tomcat
         self.nginx = nginx
         self.plugins = plugins
 
-    def command_backup(self):
+    def _backup(self):
         i = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         sudo('{home}/backup.sh {home} {home}/backup-{uuid} '
              'http://localhost:{port}/gitbucket/database/backup'.format(
@@ -59,7 +59,7 @@ class GitBucket(ManagedTask):
                         self.version, self.version))
         sudo('cp ~/Downloads/gitbucket_{version}.war /var/lib/{tomcat}/'
              'webapps/gitbucket.war'.format(
-                 version=self.version, tomcat=self.tomcat.service_name))
+                 version=self.version, tomcat=self.tomcat.name))
         self.tomcat.restart()  # create ${GITBUCKET_HOME}/.gitbucket
 
         import time
@@ -71,7 +71,7 @@ class GitBucket(ManagedTask):
 
         if self.nginx:
             NginxSite(
-                'gitbucket', 'nginx_proxy_site.conf.j2',
+                'gitbucket', 'nginx_proxy_site.conf',
                 TEMPLATE_DIR, dict(URL_ROOT='gitbucket',
                                    PROXY_PORT=self.tomcat.port)).run()
             self.nginx.restart()
@@ -79,7 +79,7 @@ class GitBucket(ManagedTask):
         for key, url in self.plugins.items():
             sudo('mkdir -p {}/plugins'.format(self.gitbucket_home))
             sudo('chown -R {tomcat}:{tomcat} {home}/plugins'.format(
-                home=self.gitbucket_home, tomcat=self.tomcat.service_name))
+                home=self.gitbucket_home, tomcat=self.tomcat.name))
             with cd('~/Downloads'):
                 if not exists('{}.jar'.format(key)):
                     run('wget {} -O {}.jar'.format(url, key))
@@ -87,5 +87,10 @@ class GitBucket(ManagedTask):
                     key=key, home=self.gitbucket_home))
                 sudo('chown {tomcat}:{tomcat} {home}/plugins/{key}.jar'.format(
                     key=key, home=self.gitbucket_home,
-                    tomcat=self.tomcat.service_name))
+                    tomcat=self.tomcat.name))
         self.tomcat.restart()
+
+    def getCommands(self):
+        d = super(GitBucket, self).getCommands()
+        d['backup'] = self._backup
+        return d

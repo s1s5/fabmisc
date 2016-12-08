@@ -18,7 +18,6 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 # $ psql -h 127.0.0.1 -p 5432 -d <database>
 # > \l  # <= table 一覧
 class Postgres(service.Service):
-    service_name = 'postgresql'
     version_string = lazy_property((str, unicode))
 
     def __init__(self, version_string, *args, **kw):
@@ -36,7 +35,7 @@ class Postgres(service.Service):
                 sudo('apt-get install {} -y'.format(package), pty=False)
 
         dst = '/etc/postgresql/{}/main/pg_hba.conf'.format(self.version_string)
-        upload_template('postgres_pg_hba.conf.j2', dst,
+        upload_template('postgres_pg_hba.conf', dst,
                         context={}, template_dir=TEMPLATE_DIR,
                         use_jinja=True, use_sudo=True)
         self.restart()

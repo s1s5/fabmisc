@@ -1,7 +1,6 @@
 # coding: utf-8
 import uuid
 
-from fabric.state import env
 from fabric.operations import run, sudo
 from fabric.context_managers import hide
 from fabric.context_managers import shell_env
@@ -100,7 +99,7 @@ def recv_lazy(value, klass=None):
 
 
 def lazy_property(klass=None):
-    prop_name = uuid.uuid4()
+    prop_name = uuid.uuid4().hex
 
     def getter(self):
         p = '_uuid_' + prop_name

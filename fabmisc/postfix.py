@@ -19,7 +19,6 @@ from .utility import lazy_property
 # mail -s title hoge@foo.bar < desc
 # /var/log/maillog
 class Postfix(service.Service):
-    service_name = 'postfix'
     relayhost = lazy_property((str, unicode))
     port = lazy_property(int)
     user = lazy_property((str, unicode))

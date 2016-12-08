@@ -9,14 +9,14 @@ from .utility import lazy_property
 
 
 class Tomcat(service.Service):
-    service_name = lazy_property((str, unicode))
     version_string = lazy_property((str, unicode))
     java_home = lazy_property((str, unicode))
     port = lazy_property(int)
 
     def __init__(self, version_string, java_home, port=8080, *args, **kw):
+        if 'name' not in kw:
+            kw['name'] = 'tomcat{}'.format(version_string)
         super(Tomcat, self).__init__(*args, **kw)
-        self.service_name = 'tomcat{}'.format(version_string)
         self.version_string = version_string
         self.java_home = java_home
         self.port = port

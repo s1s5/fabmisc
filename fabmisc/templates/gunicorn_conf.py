@@ -2,7 +2,7 @@
 import multiprocessing
 
 # bind = 'unix:/tmp/gunicorn_memo.sock'
-bind = "127.0.0.1:{{ port }}"
+bind = "127.0.0.1:{{ proxy_port }}"
 
 backlog = 2048
 workers = multiprocessing.cpu_count() * 2 + 1

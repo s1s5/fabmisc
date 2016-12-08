@@ -11,22 +11,21 @@ from .managed_task import ManagedTask
 
 
 class Service(ManagedTask):
-    service_name = None
     __services = []
     __module = None
 
     def __init__(self, *args, **kw):
         super(Service, self).__init__(*args, **kw)
         Service.__services.append(self)
-        all_services = ','.join([x.getServiceName() for x in self.__services])
+        all_services = ','.join([x.name for x in self.__services])
         for key, value in self.__allMethods().items():
             value.__func__.__doc__ = (
                 '{} all services ({})'.format(key, all_services))
             setattr(self._getModule(), key, task(name=key)(value))
 
     def service(self, command, *args, **kw):
-        if self.service_name:
-            return sudo('service {} {}'.format(self.service_name, command))
+        if self.name:
+            return sudo('service {} {}'.format(self.name, command))
         raise NotImplementedError()
 
     def start(self):
@@ -46,15 +45,10 @@ class Service(ManagedTask):
         d['restart'] = self.restart
         return d
 
-    def getServiceName(self):
-        if self.service_name:
-            return self.service_name
-        return self.__class__.__name__.lower()
-
     @classmethod
     def __runAll(self, method_name):
         for i in Service.__services:
-            fab_api.execute(i.__decorator(getattr(i, method_name)))
+            fab_api.execute(i._decorator(getattr(i, method_name)))
 
     @classmethod
     def __deployAll(self):

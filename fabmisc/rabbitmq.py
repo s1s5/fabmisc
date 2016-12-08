@@ -10,7 +10,6 @@ from .utility import lazy_property
 
 
 class Rabbitmq(service.Service):
-    service_name = 'rabbitmq-server'
 
     def __init__(self, *args, **kw):
         super(Rabbitmq, self).__init__(*args, **kw)

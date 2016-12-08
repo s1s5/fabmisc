@@ -4,7 +4,7 @@ from fabric.operations import sudo
 from fabric.contrib.files import append
 from fabric.contrib.files import upload_template
 
-from .nginx import NginxSite
+from .nginx import Nginx, NginxSite
 from . import service
 from . import utility
 from .utility import lazy_property
@@ -14,12 +14,12 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 
 class Munin(service.Service):
-    service_name = 'munin'
     clients = lazy_property(dict)
     dbdir = lazy_property((str, unicode))
     htmldir = lazy_property((str, unicode))
     logdir = lazy_property((str, unicode))
     rundir = lazy_property((str, unicode))
+    nginx = lazy_property(Nginx)
 
     def __init__(self, clients,
                  dbdir='/var/lib/munin',
@@ -39,6 +39,7 @@ class Munin(service.Service):
         self.htmldir = htmldir
         self.logdir = logdir
         self.rundir = rundir
+        self.nginx = nginx
 
     def run(self):
         utility.apt('munin')
@@ -48,7 +49,7 @@ class Munin(service.Service):
             sudo('chown -R munin:munin {}'.format(d))
 
         filename = '/etc/munin/munin.conf'
-        upload_template('munin.conf.j2', filename,
+        upload_template('munin.conf', filename,
                         context=dict(
                             dbdir=self.dbdir,
                             htmldir=self.htmldir,
@@ -60,7 +61,7 @@ class Munin(service.Service):
 
         if self.nginx:
             NginxSite(
-                'munin', 'nginx_static_site.conf.j2',
+                'munin', 'nginx_static_site.conf',
                 TEMPLATE_DIR, dict(
                     ROOT=self.htmldir,
                     URL_ROOT='munin', )).run()
@@ -81,8 +82,8 @@ class Munin(service.Service):
 
 
 class MuninNode(service.Service):
-    service_name = 'munin-node'
-    server_ips = lazy_property((str, unicode))
+    name = 'munin-node'
+    server_ips = lazy_property()
     port = lazy_property(int)
     plugins = lazy_property()
 

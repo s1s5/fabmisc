@@ -8,6 +8,7 @@ from fabric.contrib.files import upload_template
 
 from . import cron
 from . import service
+from .nginx import NginxUpstream
 from .virtualenv import Virtualenv
 from .utility import lazy_property
 
@@ -15,41 +16,40 @@ from .utility import lazy_property
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 
-class Gunicorn(service.Service):
-    path = lazy_property((str, unicode))
+class Gunicorn(service.Service, NginxUpstream):
+    work_dir = lazy_property((str, unicode))
     app_name = lazy_property((str, unicode))
-    port = lazy_property(int)
     shell_filename = lazy_property((str, unicode))
     conf_filename = lazy_property((str, unicode))
     virtualenv = lazy_property(Virtualenv)
 
-    def __init__(self, path, app_name, port,
+    def __init__(self, work_dir, app_name, port,
                  shell_filename='gunicorn.sh',
                  conf_filename='gunicorn_conf.py',
                  virtualenv=None, *args, **kw):
         super(Gunicorn, self).__init__(*args, **kw)
-        self.path = path
+        self.work_dir = work_dir
         self.app_name = app_name
-        self.port = port
+        self.proxy_port = port
         self.shell_filename = shell_filename
         self.conf_filename = conf_filename
         self.virtualenv = virtualenv
 
     def service(self, command, *args, **kw):
         if self.virtualenv:
-            with self.virtualenv.prefix(self.path):
+            with self.virtualenv.prefix(self.work_dir):
                 run('./{} {}'.format(self.shell_filename, command), pty=False)
         else:
-            with cd(self.path):
+            with cd(self.work_dir):
                 run('./{} {}'.format(self.shell_filename, command), pty=False)
 
     def run(self):
-        path = self.virtualenv.getPath(self.path)
-        upload_template('gunicorn_conf.py.j2',
+        path = self.virtualenv.getPath(self.work_dir)
+        upload_template('gunicorn_conf.py',
                         os.path.join(path, self.conf_filename),
                         context=self.__dict__, template_dir=TEMPLATE_DIR,
                         use_jinja=True)
-        upload_template('gunicorn.sh.j2',
+        upload_template('gunicorn.sh',
                         os.path.join(path, self.shell_filename),
                         context=self.__dict__, template_dir=TEMPLATE_DIR,
                         use_jinja=True, mode='0755')
