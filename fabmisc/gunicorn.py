@@ -23,14 +23,16 @@ class Gunicorn(service.Service, NginxProxy):
     conf_filename = lazy_property((str, unicode))
     virtualenv = lazy_property(Virtualenv)
 
-    def __init__(self, work_dir, app_name, port,
+    def __init__(self, app_name, work_dir=None,
                  shell_filename='gunicorn.sh',
                  conf_filename='gunicorn_conf.py',
                  virtualenv=None, **kw):
-        super(Gunicorn, self).__init__(**kw)
-        self.work_dir = work_dir
+        pattern = app_name
+        if 'pattern' in kw:
+            pattern = kw.pop('pattern')
+        super(Gunicorn, self).__init__(pattern=pattern, **kw)
         self.app_name = app_name
-        self.proxy_port = port
+        self.work_dir = work_dir
         self.shell_filename = shell_filename
         self.conf_filename = conf_filename
         self.virtualenv = virtualenv

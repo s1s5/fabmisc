@@ -1,0 +1,10 @@
+apt:
+  - git-core
+  - python-imaging
+  - locales
+  - python-dev
+  - python-pip
+
+pip:
+  - setuptools
+  - virtualenvwrapper
