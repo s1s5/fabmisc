@@ -20,3 +20,4 @@ from .decorators import *  # NOQA
 from .config import *  # NOQA
 from .munin import *  # NOQA
 from .cron import *  # NOQA
+from .celery import *  # NOQA

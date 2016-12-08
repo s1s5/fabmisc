@@ -14,6 +14,9 @@ class Rabbitmq(service.Service):
     def __init__(self, **kw):
         super(Rabbitmq, self).__init__(**kw)
 
+    def service(self, command, *args, **kw):
+        return sudo('service rabbitmq-server {}'.format(command))
+
     def run(self):
         apt_packages = [
             "rabbitmq-server",

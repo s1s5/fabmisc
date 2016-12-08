@@ -37,7 +37,7 @@ class Celery(service.Service):
         if self.broker:
             ext += '--broker=amqp://{}:{}@{}:{}/{} '.format(
                 self.broker.user, self.broker.password,
-                self.hostname, self.port, self.vhost)
+                self.broker.hostname, self.broker.port, self.broker.vhost)
         self.__run(lambda: fab_run(
             'celery multi start {} -A {} '
             '--pidfile="/var/run/celery/%n.pid" '
@@ -61,3 +61,4 @@ class Celery(service.Service):
         sudo('chmod 1777 /var/run/celery')
         sudo('mkdir -p /var/log/celery')
         sudo('chmod 1777 /var/log/celery')
+        self.restart()

@@ -24,8 +24,10 @@ broker0 = fabmisc.RabbitmqBroker(
 broker1 = fabmisc.RabbitmqBroker(
     user="broker1", password="broker1_password",
     vhost="broker1")
-fabmisc.Celery('test_django2', 'test_django2_worker0')
-fabmisc.Celery('test_django2', 'test_django2_worker1', broker=broker1)
+fabmisc.Celery('test_django2', 'test_django2_worker0',
+               virtualenv=lazy(env, 'virtualenv'))
+fabmisc.Celery('test_django2', 'test_django2_worker1',
+               broker=broker1, virtualenv=lazy(env, 'virtualenv'))
 gunicorn = fabmisc.Gunicorn(
     'test_django2.wsgi:application',
     virtualenv=lazy(env, 'virtualenv'),
