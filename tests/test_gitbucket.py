@@ -38,8 +38,8 @@ java = fabmisc.OracleJava()
 tomcat = fabmisc.Tomcat('8', java.getJavaHome())
 gitbucket = fabmisc.GitBucket(
     '4.7.1', tomcat, plugins=plugins, db_table=postgres_table)
-gitbucket_site = fabmisc.NginxSite(nginx, 'gitbucket',
-                                   locations=(gitbucket, ))
+gitbucket_site = fabmisc.NginxSite(nginx, 'tomcat',
+                                   locations=(tomcat, ))
 
 # # install gitbucket, with_postgres
 # $ fab -f test_gitbucket.py -H <hostname> tasks.run

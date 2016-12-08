@@ -100,10 +100,11 @@ class NginxProxy(NginxLocation):
     proxy_port = lazy_property(int)
 
     def __init__(self, proxy_host='127.0.0.1', proxy_port=8080,
-                 **kw):
+                 rewrite_url=True, **kw):
         super(NginxProxy, self).__init__(**kw)
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
+
         if self.options is None:
             self.options = [
                 "proxy_set_header X-Forwarded-Protocol $scheme",
@@ -112,6 +113,9 @@ class NginxProxy(NginxLocation):
                 "proxy_redirect off",
                 "proxy_buffering on",
             ]
+        if rewrite_url and self.pattern != '/':
+            self.options.append(
+                'rewrite {}(.*) $1 break'.format(self.pattern))
 
 
 class NginxSite(ManagedTask):

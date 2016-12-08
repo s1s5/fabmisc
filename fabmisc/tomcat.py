@@ -3,23 +3,24 @@ from fabric.operations import sudo
 from fabric.contrib.files import append
 from fabric.contrib.files import sed
 
+from .nginx import NginxProxy
 from . import service
 from . import utility
 from .utility import lazy_property
 
 
-class Tomcat(service.Service):
+class Tomcat(NginxProxy, service.Service):
     version_string = lazy_property((str, unicode))
     java_home = lazy_property((str, unicode))
-    port = lazy_property(int)
 
-    def __init__(self, version_string, java_home, port=8080, **kw):
+    def __init__(self, version_string, java_home, proxy_port=8080, **kw):
         if 'name' not in kw:
             kw['name'] = 'tomcat{}'.format(version_string)
+        if 'pattern' not in kw:
+            kw['pattern'] = '/{}'.format(kw['name'])
         super(Tomcat, self).__init__(**kw)
         self.version_string = version_string
         self.java_home = java_home
-        self.port = port
 
     def run(self):
         utility.apt('tomcat{}'.format(self.version_string))
@@ -33,6 +34,7 @@ class Tomcat(service.Service):
         sed('/etc/tomcat{version}/server.xml'.format(
             version=self.version_string),
             '<Connector port="[0-9]*" ',
-            '<Connector port="{port}" '.format(version=self.version_string,
-                                               port=self.port), use_sudo=True)
+            '<Connector port="{port}" '.format(
+                version=self.version_string,
+                port=self.proxy_port), use_sudo=True)
         self.restart()
