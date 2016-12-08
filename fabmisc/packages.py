@@ -25,10 +25,11 @@ class Packages(ManagedTask):
     def run(self):
         with hide('stdout'):
             sudo('apt-get update')
-            for package in self.apt_packages:
+            for package in self.apt_packages + ['python-pip', 'locales']:
                 sudo('apt-get install {} -y'.format(package), pty=False)
 
-            for package in self.pip_packages:
+            for package in self.pip_packages + [
+                    'setuptools', 'virtualenvwrapper']:
                 sudo('pip install {}'.format(package), pty=False)
 
             with shell_env(LANG=self.lang):

@@ -4,7 +4,7 @@ from fabric.operations import run
 from fabric.context_managers import cd
 
 from .managed_task import ManagedTask
-from .utility import lazy_property
+from .utility import apt, lazy_property
 
 
 class Git(ManagedTask):
@@ -19,6 +19,8 @@ class Git(ManagedTask):
         self.branch = branch
 
     def run(self):
+        apt('git-core')
+
         with warn_only():
             if run("test -d %s" % self.deploy_dir).failed:
                 run("git clone %s %s" %
