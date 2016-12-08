@@ -10,7 +10,6 @@ from fabric.contrib.files import upload_template
 from . import service
 from .ssl import Ssl
 from .managed_task import ManagedTask
-
 import utility
 from .utility import lazy_property
 
@@ -23,6 +22,7 @@ class Nginx(service.Service):
     def run(self):
         apt_packages = [
             "nginx",
+            "nginx-extras",
             "apache2-utils",
         ]
         for package in apt_packages:
@@ -45,8 +45,8 @@ class NginxHtpasswd(ManagedTask):
     use_sudo = lazy_property(bool)
 
     def __init__(self, path, user, password,
-                 use_sudo=True, *args, **kw):
-        super(NginxHtpasswd, self).__init__(*args, **kw)
+                 use_sudo=True, **kw):
+        super(NginxHtpasswd, self).__init__(**kw)
         self.path = path
         self.user = user
         self.password = password
@@ -71,8 +71,8 @@ class NginxLocation(object):
     options = lazy_property()
     htpasswd = lazy_property(NginxHtpasswd)
 
-    def __init__(self, pattern='/', htpasswd=None, options=None):
-        super(NginxLocation, self).__init__()
+    def __init__(self, pattern='/', htpasswd=None, options=None, **kw):
+        super(NginxLocation, self).__init__(**kw)
         self.pattern = pattern
         self.htpasswd = htpasswd
         self.options = options
@@ -81,8 +81,9 @@ class NginxLocation(object):
 class NginxAlias(NginxLocation):
     alias = lazy_property((str, unicode))
 
-    def __init__(self, path='/var/www', *args, **kw):
-        super(NginxAlias, self).__init__(args, kw)
+    def __init__(self, path='/var/www', **kw):
+        super(NginxAlias, self).__init__(**kw)
+        self.alias = path
         if self.options is None:
             self.options = [
                 "expires 1y",
@@ -99,8 +100,8 @@ class NginxProxy(NginxLocation):
     proxy_port = lazy_property(int)
 
     def __init__(self, proxy_host='127.0.0.1', proxy_port=8080,
-                 *args, **kw):
-        super(NginxProxy, self).__init__(*args, **kw)
+                 **kw):
+        super(NginxProxy, self).__init__(**kw)
         self.proxy_host = proxy_host
         self.proxy_port = proxy_port
         if self.options is None:
@@ -124,8 +125,8 @@ class NginxSite(ManagedTask):
 
     def __init__(self, nginx, site_name, site_conf_filename='nginx_site.conf',
                  template_dir=TEMPLATE_DIR, kw_dict={}, locations=(), ssl=None,
-                 *args, **kw):
-        super(NginxSite, self).__init__(*args, **kw)
+                 **kw):
+        super(NginxSite, self).__init__(**kw)
         self.nginx = nginx
         self.site_name = site_name
         self.site_conf_filename = site_conf_filename

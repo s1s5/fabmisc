@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import time
 from datetime import datetime
 
 from fabric.contrib.files import upload_template
@@ -28,12 +29,14 @@ class GitBucket(NginxProxy, ManagedTask):
     db_table = lazy_property(TableMixin)
 
     def __init__(self, version, tomcat,
-                 plugins=dict(), db_table=None,
-                 *args, **kw):
+                 plugins=dict(), db_table=None, **kw):
+        pattern = '/gitbucket'
+        if 'pattern' in kw:
+            pattern = kw.pop('pattern')
         super(GitBucket, self).__init__(
-            pattern='/gitbucket',
+            pattern=pattern,
             proxy_port=lambda: self.tomcat.port,
-            *args, **kw)
+            **kw)
         self.gitbucket_home = '/usr/share/{}/.gitbucket'.format(
             tomcat.name)
         self.version = version
@@ -68,8 +71,10 @@ class GitBucket(NginxProxy, ManagedTask):
                  version=self.version, tomcat=self.tomcat.name))
         self.tomcat.restart()  # create ${GITBUCKET_HOME}/.gitbucket
 
-        import time
-        time.sleep(5)  # gitbucket_home not created...
+        for i in range(10):
+            if exists(self.gitbucket_home):
+                break
+            time.sleep(1)  # gitbucket_home not created...
 
         put(os.path.join(TEMPLATE_DIR, 'gitbucket_backup.sh'),
             '{}/backup.sh'.format(self.gitbucket_home), use_sudo=True)

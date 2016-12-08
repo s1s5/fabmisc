@@ -24,8 +24,8 @@ class Postfix(service.Service):
     user = lazy_property((str, unicode))
     password = lazy_property((str, unicode))
 
-    def __init__(self, relayhost, port, user, password, *args, **kw):
-        super(Postfix, self).__init__(*args, **kw)
+    def __init__(self, relayhost, port, user, password, **kw):
+        super(Postfix, self).__init__(**kw)
         self.relayhost = relayhost
         self.port = port
         self.user = user

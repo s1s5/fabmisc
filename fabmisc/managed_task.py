@@ -12,8 +12,8 @@ class ManagedTask(Task):
     __tasks = []
     __module = None
 
-    def __init__(self, hosts=(), roles=(), runs_once=False, *args, **kw):
-        super(ManagedTask, self).__init__(*args, **kw)
+    def __init__(self, hosts=(), roles=(), runs_once=False, **kw):
+        super(ManagedTask, self).__init__(**kw)
         if 'name' in kw:
             self.name = kw['name']
         else:
@@ -76,6 +76,7 @@ class ManagedTask(Task):
                 f.__func__.__doc__ = message
                 f = self._decorator(f)
             setattr(module, fname, task(name=fname)(f))
+        ManagedTask.__tasks.append(self)
 
     @classmethod
     def __runAll(klass):

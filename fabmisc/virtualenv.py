@@ -37,8 +37,8 @@ class Virtualenv(ManagedTask):
 
     def __init__(self, name, path,
                  workon_home='~/.virtualenvs',
-                 requirements_filename='requirements.txt', *args, **kw):
-        super(Virtualenv, self).__init__(*args, **kw)
+                 requirements_filename='requirements.txt', **kw):
+        super(Virtualenv, self).__init__(**kw)
         self._name = name
         self._path = path
         self._workon_home = workon_home

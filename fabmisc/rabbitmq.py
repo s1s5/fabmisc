@@ -11,8 +11,8 @@ from .utility import lazy_property
 
 class Rabbitmq(service.Service):
 
-    def __init__(self, *args, **kw):
-        super(Rabbitmq, self).__init__(*args, **kw)
+    def __init__(self, **kw):
+        super(Rabbitmq, self).__init__(**kw)
 
     def run(self):
         apt_packages = [
@@ -31,16 +31,20 @@ class Rabbitmq(service.Service):
 
 
 class RabbitmqBroker(ManagedTask):
-    url = lazy_property((str, unicode))
     user = lazy_property((str, unicode))
     password = lazy_property((str, unicode))
     vhost = lazy_property((str, unicode))
+    hostname = lazy_property((str, unicode))
+    port = lazy_property(int)
 
-    def __init__(self, url, user, password, vhost):
-        self.url = url
+    def __init__(self, user, password, vhost,
+                 hostname='127.0.0.1', port=5672, **kw):
+        super(RabbitmqBroker, self).__init__(**kw)
         self.user = user
         self.password = password
         self.vhost = vhost
+        self.hostname = hostname
+        self.port = port
 
     def run(self):
         with warn_only():

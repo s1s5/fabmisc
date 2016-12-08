@@ -12,8 +12,8 @@ class Git(ManagedTask):
     repo_url = lazy_property((str, unicode))
     branch = lazy_property((str, unicode))
 
-    def __init__(self, deploy_dir, repo_url, branch="master", *args, **kw):
-        super(Git, self).__init__(*args, **kw)
+    def __init__(self, deploy_dir, repo_url, branch="master", **kw):
+        super(Git, self).__init__(**kw)
         self.deploy_dir = deploy_dir
         self.repo_url = repo_url
         self.branch = branch

@@ -26,8 +26,8 @@ class Gunicorn(service.Service, NginxProxy):
     def __init__(self, work_dir, app_name, port,
                  shell_filename='gunicorn.sh',
                  conf_filename='gunicorn_conf.py',
-                 virtualenv=None, *args, **kw):
-        super(Gunicorn, self).__init__(*args, **kw)
+                 virtualenv=None, **kw):
+        super(Gunicorn, self).__init__(**kw)
         self.work_dir = work_dir
         self.app_name = app_name
         self.proxy_port = port

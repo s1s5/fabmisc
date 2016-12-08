@@ -13,8 +13,8 @@ class Cron(ManagedTask):
     line_map = lazy_property(dict)
     for_root = lazy_property(bool)
 
-    def __init__(self, line_map, for_root=False, *args, **kw):
-        super(Cron, self).__init__(*args, **kw)
+    def __init__(self, line_map, for_root=False, **kw):
+        super(Cron, self).__init__(**kw)
         self.line_map = line_map
         self.for_root = for_root
 

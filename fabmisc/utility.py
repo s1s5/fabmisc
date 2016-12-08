@@ -45,7 +45,7 @@ def rm(path, use_sudo=False):
 
 
 def delete_lines_with_sed(path, sed_pattern, use_sudo=False):
-    def escape(self, value):
+    def escape(value):
         return value.replace('/', '\\/')
 
     _run_or_sudo(use_sudo)("sed -i '/{}/d' {}".format(
@@ -64,7 +64,8 @@ class DummyAccessor(object):
         if callable(value):
             value = value()
         if self.klass and (not isinstance(value, self.klass)):
-            raise TypeError()
+            raise TypeError('value={}, type={}, expected_type={}'.format(
+                value, type(value), self.klass))
         return value
 
 
@@ -89,7 +90,8 @@ class LazyAccessor(object):
         else:
             value = self.dictionary[self.key]
         if self.klass and (not isinstance(value, self.klass)):
-            raise TypeError()
+            raise TypeError('value={}, type={}, expected_type={}'.format(
+                value, type(value), self.klass))
         return value
 
 

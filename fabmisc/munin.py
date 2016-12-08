@@ -4,7 +4,7 @@ from fabric.operations import sudo
 from fabric.contrib.files import append
 from fabric.contrib.files import upload_template
 
-from .nginx import Nginx, NginxSite
+from .nginx import NginxAlias
 from . import service
 from . import utility
 from .utility import lazy_property
@@ -13,19 +13,18 @@ from .utility import lazy_property
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 
-class Munin(service.Service):
+class Munin(NginxAlias, service.Service):
     clients = lazy_property(dict)
     dbdir = lazy_property((str, unicode))
     htmldir = lazy_property((str, unicode))
     logdir = lazy_property((str, unicode))
     rundir = lazy_property((str, unicode))
-    nginx = lazy_property(Nginx)
 
     def __init__(self, clients,
                  dbdir='/var/lib/munin',
                  htmldir='/var/www/munin',
                  logdir='/var/log/munin',
-                 rundir='/var/run/munin', nginx=None, *args, **kw):
+                 rundir='/var/run/munin', **kw):
         '''clients = {
             "group": {
                 "hostname": "ip_address",
@@ -33,13 +32,18 @@ class Munin(service.Service):
             },
             ...
         }'''
-        super(Munin, self).__init__(*args, **kw)
+        pattern = '/munin'
+        if 'pattern' in kw:
+            pattern = kw.pop('pattern')
+        super(Munin, self).__init__(
+            pattern=pattern,
+            path=lambda: self.htmldir,
+            **kw)
         self.clients = clients
         self.dbdir = dbdir
         self.htmldir = htmldir
         self.logdir = logdir
         self.rundir = rundir
-        self.nginx = nginx
 
     def run(self):
         utility.apt('munin')
@@ -59,13 +63,6 @@ class Munin(service.Service):
                         ), template_dir=TEMPLATE_DIR,
                         use_jinja=True, use_sudo=True)
 
-        if self.nginx:
-            NginxSite(
-                'munin', 'nginx_static_site.conf',
-                TEMPLATE_DIR, dict(
-                    ROOT=self.htmldir,
-                    URL_ROOT='munin', )).run()
-            self.nginx.restart()
         # TODO(sawai) : change cron settings
         self.restart()
 
@@ -87,8 +84,8 @@ class MuninNode(service.Service):
     port = lazy_property(int)
     plugins = lazy_property()
 
-    def __init__(self, server_ips, port=4949, plugins=None, *args, **kw):
-        super(MuninNode, self).__init__(*args, **kw)
+    def __init__(self, server_ips, port=4949, plugins=None, **kw):
+        super(MuninNode, self).__init__(**kw)
         self.server_ips = server_ips
         self.port = port
         self.plugins = plugins

@@ -15,8 +15,8 @@ class Packages(ManagedTask):
     timezone = lazy_property((str, unicode))
 
     def __init__(self, apt_packages, pip_packages,
-                 lang='ja_JP.UTF-8', timezone='Asia/Tokyo', *args, **kw):
-        super(Packages, self).__init__(*args, **kw)
+                 lang='ja_JP.UTF-8', timezone='Asia/Tokyo', **kw):
+        super(Packages, self).__init__(**kw)
         self.apt_packages = apt_packages
         self.pip_packages = pip_packages
         self.lang = lang

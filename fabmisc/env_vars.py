@@ -11,8 +11,8 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 
 class EnvVars(ManagedTask):
-    def __init__(self, filename, prefix, keys, dictionary, *args, **kw):
-        super(EnvVars, self).__init__(*args, **kw)
+    def __init__(self, filename, prefix, keys, dictionary, **kw):
+        super(EnvVars, self).__init__(**kw)
         self.filename = recv_lazy(filename, (str, unicode))
         self.prefix = recv_lazy(prefix, (str, unicode))
         self.keys = recv_lazy(keys)

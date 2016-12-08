@@ -14,8 +14,8 @@ class Service(ManagedTask):
     __services = []
     __module = None
 
-    def __init__(self, *args, **kw):
-        super(Service, self).__init__(*args, **kw)
+    def __init__(self, **kw):
+        super(Service, self).__init__(**kw)
         Service.__services.append(self)
         all_services = ','.join([x.name for x in self.__services])
         for key, value in self.__allMethods().items():

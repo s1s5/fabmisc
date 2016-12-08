@@ -32,8 +32,8 @@ funcs._run_as_pg = _run_as_pg
 class Postgres(service.Service):
     version_string = lazy_property((str, unicode))
 
-    def __init__(self, version_string, *args, **kw):
-        super(Postgres, self).__init__(*args, **kw)
+    def __init__(self, version_string, **kw):
+        super(Postgres, self).__init__(**kw)
         self.version_string = version_string
 
     def service(self, command, *args, **kw):

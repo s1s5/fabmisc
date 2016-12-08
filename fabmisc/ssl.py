@@ -23,8 +23,8 @@ class Ssl(ManagedTask):
     def __init__(self, certificates=None, private_key=None,
                  private_key_password=None,
                  remote_path='/etc/nginx/ssl/site',
-                 regenerate=False, use_sudo=True, *args, **kw):
-        super(Ssl, self).__init__(*args, **kw)
+                 regenerate=False, use_sudo=True, **kw):
+        super(Ssl, self).__init__(**kw)
         self.certificates = certificates
         self.private_key = private_key
         self.private_key_password = private_key_password

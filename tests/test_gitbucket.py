@@ -1,5 +1,4 @@
 # coding: utf-8
-import sys
 import os
 import imp
 
@@ -42,10 +41,5 @@ gitbucket = fabmisc.GitBucket(
 gitbucket_site = fabmisc.NginxSite(nginx, 'gitbucket',
                                    locations=(gitbucket, ))
 
-fabmisc.Munin(clients={
-    'group': {
-        'vmubuntu0': '192.168.11.204',
-    }
-}, nginx=nginx, roles=('manager', ))
-
-fabmisc.MuninNode(('192.168.11.205', ), roles=('slave', ))
+# # install gitbucket, with_postgres
+# $ fab -f test_gitbucket.py -H <hostname> tasks.run

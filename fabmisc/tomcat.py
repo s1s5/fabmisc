@@ -13,10 +13,10 @@ class Tomcat(service.Service):
     java_home = lazy_property((str, unicode))
     port = lazy_property(int)
 
-    def __init__(self, version_string, java_home, port=8080, *args, **kw):
+    def __init__(self, version_string, java_home, port=8080, **kw):
         if 'name' not in kw:
             kw['name'] = 'tomcat{}'.format(version_string)
-        super(Tomcat, self).__init__(*args, **kw)
+        super(Tomcat, self).__init__(**kw)
         self.version_string = version_string
         self.java_home = java_home
         self.port = port

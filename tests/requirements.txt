@@ -1,0 +1,4 @@
+fabric
+fabtools
+jinja2
+PyYAML
