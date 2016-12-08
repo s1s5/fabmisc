@@ -16,7 +16,7 @@ from .utility import lazy_property
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 
-class Gunicorn(service.Service, NginxProxy):
+class Gunicorn(NginxProxy, service.Service):
     work_dir = lazy_property((str, unicode))
     app_name = lazy_property((str, unicode))
     shell_filename = lazy_property((str, unicode))
@@ -27,10 +27,7 @@ class Gunicorn(service.Service, NginxProxy):
                  shell_filename='gunicorn.sh',
                  conf_filename='gunicorn_conf.py',
                  virtualenv=None, **kw):
-        pattern = app_name
-        if 'pattern' in kw:
-            pattern = kw.pop('pattern')
-        super(Gunicorn, self).__init__(pattern=pattern, **kw)
+        super(Gunicorn, self).__init__(**kw)
         self.app_name = app_name
         self.work_dir = work_dir
         self.shell_filename = shell_filename
@@ -49,11 +46,11 @@ class Gunicorn(service.Service, NginxProxy):
         path = self.virtualenv.getPath(self.work_dir)
         upload_template('gunicorn_conf.py',
                         os.path.join(path, self.conf_filename),
-                        context=self.__dict__, template_dir=TEMPLATE_DIR,
+                        context=dict(gunicorn=self), template_dir=TEMPLATE_DIR,
                         use_jinja=True)
         upload_template('gunicorn.sh',
                         os.path.join(path, self.shell_filename),
-                        context=self.__dict__, template_dir=TEMPLATE_DIR,
+                        context=dict(gunicorn=self), template_dir=TEMPLATE_DIR,
                         use_jinja=True, mode='0755')
         workon = ''
         if self.virtualenv:

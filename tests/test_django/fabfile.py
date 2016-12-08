@@ -19,7 +19,9 @@ env['virtualenv'] = fabmisc.Virtualenv(
     "test_django", "work/fabmisc/tests/test_django")
 gunicorn = fabmisc.Gunicorn(
     'test_django.wsgi:application',
-    virtualenv=lazy(env, 'virtualenv'))
+    virtualenv=lazy(env, 'virtualenv'),
+    pattern='/test_django',
+    proxy_port=8099)
 fabmisc.NginxSite(nginx, 'test_django',
                   locations=(gunicorn, ))
 

@@ -10,7 +10,7 @@ start() {
     fi
     echo "Starting server..."
     cd $BASEDIR
-    gunicorn {{ app_name }} -c gunicorn_conf.py -p $PIDFILE -D
+    gunicorn {{ gunicorn.app_name }} -c gunicorn_conf.py -p $PIDFILE -D
 }
 
 stop() {

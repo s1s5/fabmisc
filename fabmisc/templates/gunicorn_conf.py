@@ -2,7 +2,7 @@
 import multiprocessing
 
 # bind = 'unix:/tmp/gunicorn_memo.sock'
-bind = "127.0.0.1:{{ proxy_port }}"
+bind = "127.0.0.1:{{ gunicorn.proxy_port }}"
 
 backlog = 2048
 workers = multiprocessing.cpu_count() * 2 + 1
@@ -30,4 +30,4 @@ logfile = 'gunicorn.log'
 loglevel = 'info'
 logconfig = None
 
-proc_name = '{{ app_name }}'
+proc_name = '{{ gunicorn.app_name }}'
