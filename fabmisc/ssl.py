@@ -1,4 +1,5 @@
 # coding: utf-8
+import os
 import uuid
 
 from fabric.contrib.files import exists as fab_exists
@@ -69,6 +70,8 @@ class Ssl(ManagedTask):
             _run = run
             if self.use_sudo:
                 _run = sudo
+            remote_dir = os.path.dirname(self.remote_path)
+            _run('mkdir -p {}'.format(remote_dir))
             _run('cp server.crt {}'.format(self.cert_path))
             _run('cp server.key {}'.format(self.key_path))
         run('rm -rf {}'.format(tmp_dir))
