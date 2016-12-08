@@ -1,2 +1,7 @@
-Django
-djcelery
+Django==1.10
+celery==3.1.23
+gunicorn==19.6.0
+django-celery==3.1.17
+amqp==1.4.9
+Pillow==3.3.1
+sorl-thumbnail==12.3
