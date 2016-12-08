@@ -1,0 +1,5 @@
+apt:
+  - python-imaging
+  - python-dev
+
+pip: []
