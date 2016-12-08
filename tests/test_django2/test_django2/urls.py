@@ -20,6 +20,13 @@ from django.http.response import HttpResponse
 
 
 def return_hello(*args, **kw):
+    from test_django2 import tasks
+    tasks.delay_hello.delay()
+
+    from kombu import BrokerConnection
+    tasks.delay_hello2.apply_async(
+        (), connection=BrokerConnection(
+            "amqp://broker1:broker1_password@localhost:5672/broker1"))
     return HttpResponse("hello world")
 
 urlpatterns = [

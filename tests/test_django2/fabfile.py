@@ -17,6 +17,15 @@ nginx = fabmisc.Nginx()
 fabmisc.Git('work/fabmisc', 'git@github.com:s1s5/fabmisc.git')
 env['virtualenv'] = fabmisc.Virtualenv(
     "test_django2", "work/fabmisc/tests/test_django2")
+fabmisc.Rabbitmq()
+broker0 = fabmisc.RabbitmqBroker(
+    user="broker0", password="broker0_password",
+    vhost="broker0")
+broker1 = fabmisc.RabbitmqBroker(
+    user="broker1", password="broker1_password",
+    vhost="broker1")
+fabmisc.Celery('test_django2', 'test_django2_worker0')
+fabmisc.Celery('test_django2', 'test_django2_worker1', broker=broker1)
 gunicorn = fabmisc.Gunicorn(
     'test_django2.wsgi:application',
     virtualenv=lazy(env, 'virtualenv'),

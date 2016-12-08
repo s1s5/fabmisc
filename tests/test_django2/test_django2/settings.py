@@ -118,3 +118,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+INSTALLED_APPS += ["djcelery", ]
+
+import djcelery  # NOQA
+djcelery.setup_loader()
+
+CELERY_ACCEPT_CONTENT = ['json', ]
+
+BROKER_URL = 'amqp://broker0:broker0_password@localhost:5672/broker0'
+# BROKER_URL = 'amqp://localhost:5672/'
+CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_PERSISTENT = True
