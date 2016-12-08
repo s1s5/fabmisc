@@ -28,9 +28,6 @@ class Cron(ManagedTask):
             r('crontab -l > {}'.format(fn))
         for key, value in self.line_map.items():
             utility.delete_lines_with_sed(
-                fn, '# {}'.format(self.escape(key)), use_sudo=self.for_root)
+                fn, '# {}'.format(key), use_sudo=self.for_root)
             append(fn, '{} # {}'.format(value, key), use_sudo=self.for_root)
         r('crontab < {}'.format(fn))
-
-    def escape(self, value):
-        return value.replace('/', '\\/')

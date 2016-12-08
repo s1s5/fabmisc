@@ -18,6 +18,9 @@ fabmisc = imp.load_module(
         "fabmisc", [ROOT]))
 
 nginx = fabmisc.Nginx()
+postgres = fabmisc.Postgres('9.5')
+postgres_table = fabmisc.PostgresTable(
+    'gitbucket', 'gitbucket', 'gitbucket_pass')
 plugins = {
     'gitbucket-h2-backup-plugin':
     'https://github.com/gitbucket-plugins/gitbucket-h2-backup-plugin/'
@@ -35,7 +38,9 @@ plugins = {
 java = fabmisc.OracleJava()
 tomcat = fabmisc.Tomcat('8', java.getJavaHome())
 gitbucket = fabmisc.GitBucket(
-    '4.7.1', tomcat, nginx=nginx, plugins=plugins)
+    '4.7.1', tomcat, plugins=plugins, db_table=postgres_table)
+gitbucket_site = fabmisc.NginxSite(nginx, 'gitbucket',
+                                   locations=(gitbucket, ))
 
 fabmisc.Munin(clients={
     'group': {

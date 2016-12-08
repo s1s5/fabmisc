@@ -45,7 +45,11 @@ def rm(path, use_sudo=False):
 
 
 def delete_lines_with_sed(path, sed_pattern, use_sudo=False):
-    _run_or_sudo(use_sudo)("sed -i '/{}/d' {}".format(sed_pattern, path))
+    def escape(self, value):
+        return value.replace('/', '\\/')
+
+    _run_or_sudo(use_sudo)("sed -i '/{}/d' {}".format(
+        escape(sed_pattern), path))
 
 
 class DummyAccessor(object):
@@ -54,11 +58,14 @@ class DummyAccessor(object):
         self.klass = klass
 
     def __call__(self):
-        if self.value is None:
-            return self.value
-        if self.klass and (not isinstance(self.value, self.klass)):
+        value = self.value
+        if value is None:
+            return value
+        if callable(value):
+            value = value()
+        if self.klass and (not isinstance(value, self.klass)):
             raise TypeError()
-        return self.value
+        return value
 
 
 class _RaiseError(object):

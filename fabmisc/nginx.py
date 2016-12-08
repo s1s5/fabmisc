@@ -113,10 +113,6 @@ class NginxProxy(NginxLocation):
             ]
 
 
-class NginxUpstream(NginxProxy):
-    pass
-
-
 class NginxSite(ManagedTask):
     nginx = lazy_property(Nginx)
     site_name = lazy_property((str, unicode))
@@ -143,8 +139,6 @@ class NginxSite(ManagedTask):
         enabled = '/etc/nginx/sites-enabled/{}'.format(self.site_name)
         context = dict(
             locations=self.locations,
-            upstreams=[x for x in self.locations
-                       if isinstance(x, NginxUpstream)],
             ssl=self.ssl,
         )
         context.update(self.kw_dict)

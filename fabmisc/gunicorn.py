@@ -8,7 +8,7 @@ from fabric.contrib.files import upload_template
 
 from . import cron
 from . import service
-from .nginx import NginxUpstream
+from .nginx import NginxProxy
 from .virtualenv import Virtualenv
 from .utility import lazy_property
 
@@ -16,7 +16,7 @@ from .utility import lazy_property
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 
-class Gunicorn(service.Service, NginxUpstream):
+class Gunicorn(service.Service, NginxProxy):
     work_dir = lazy_property((str, unicode))
     app_name = lazy_property((str, unicode))
     shell_filename = lazy_property((str, unicode))
