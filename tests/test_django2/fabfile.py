@@ -32,7 +32,7 @@ gunicorn = fabmisc.Gunicorn(
     'test_django2.wsgi:application',
     virtualenv=lazy(env, 'virtualenv'),
     pattern='/test_django2',
-    proxy_port=8099)
+    proxy_port=8199)
 fabmisc.NginxSite(nginx, 'test_django2',
                   locations=(gunicorn, ))
 
