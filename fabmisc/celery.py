@@ -39,7 +39,7 @@ class Celery(service.Service):
                 self.broker.user, self.broker.password,
                 self.broker.hostname, self.broker.port, self.broker.vhost)
         self.__run(lambda: fab_run(
-            'celery multi start {} -A {} '
+            'celery multi start {} -A {} --loglevel=INFO '
             '--pidfile="/var/run/celery/%n.pid" '
             '--logfile="/var/log/celery/%n.log" {}'.format(
                 self.worker_name, self.project_name, ext

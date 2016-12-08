@@ -109,17 +109,17 @@ LOGGING = {
     'loggers': {
         "test_django": {
             'handlers': ['file', 'console', 'mail_admins'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True,
         },
         'django': {
             'handlers': ['file', 'console', 'mail_admins'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': True,
         },
         'celery': {
             'handlers': ['celery', 'console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
     }
 }
