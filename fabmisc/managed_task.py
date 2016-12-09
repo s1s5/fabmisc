@@ -29,6 +29,9 @@ class ManagedTask(object):
             self._decorator = lambda x: fab_api.hosts(hosts)(x)
         if runs_once:
             self._decorator = lambda x: fab_api.runs_once()(x)
+
+        for _, f in self.getCommands().items():
+            setattr(self, f, self._decorator(getattr(self, f)))
         self.__createTasks()
 
     def _getModuleName(self):
@@ -46,7 +49,7 @@ class ManagedTask(object):
 
     def getCommands(self):
         return dict(
-            run=self.run,
+            run='run',
         )
 
     def _messagePrefix(self):
@@ -61,6 +64,7 @@ class ManagedTask(object):
             module = getattr(self._getModule(), self.name)
 
         for fname, f in self.getCommands().items():
+            f = getattr(self, f)
             message = '{}{} {}'.format(
                 self._messagePrefix(), self.name, fname)
             if hasattr(module, fname):
@@ -69,17 +73,19 @@ class ManagedTask(object):
                 def chain(a, b):
                     def _f():
                         fab_api.execute(a)
-                        fab_api.execute(self._decorator(b))
+                        fab_api.execute(b)
                     _f.__doc__ = message
                     return _f
                 f = chain(pf, f)
             else:
-                f.__func__.__doc__ = message
-                f = self._decorator(f)
+                try:
+                    f.__func__.__doc__ = message
+                except AttributeError:
+                    f.__doc__ = message
             setattr(module, fname, task(name=fname)(f))
         ManagedTask.__tasks.append(self)
 
     @classmethod
     def __runAll(klass):
         for i in klass.__tasks:
-            fab_api.execute(i._decorator(i.run))
+            fab_api.execute(i.run)

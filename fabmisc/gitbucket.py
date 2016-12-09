@@ -110,5 +110,5 @@ class GitBucket(ManagedTask):
 
     def getCommands(self):
         d = super(GitBucket, self).getCommands()
-        d['backup'] = self._backup
+        d['backup'] = '_backup'
         return d

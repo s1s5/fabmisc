@@ -5,7 +5,7 @@ import imp
 from fabric.state import env
 from fabric.api import execute
 from fabric.operations import run
-from fabric.decorators import task
+from fabric.decorators import task, roles
 
 env.forward_agent = True
 env.use_ssh_config = True
@@ -29,7 +29,7 @@ class Test0(fabmisc.service.Service):
 
     def getCommands(self):
         d = super(Test0, self).getCommands()
-        d['backup'] = self._backup
+        d['backup'] = '_backup'
         return d
 
     def run(self):
@@ -40,16 +40,31 @@ class Test1(Test0):
     def run(self):
         run('echo ---- task1 {}; ifconfig | grep 192.168'.format(self.message))
 
-Test0("A", roles=('a', ))
-Test0("B", roles=('b', ))
-Test1("AB", roles=('a', 'b'))
+a = Test0("A", roles=('a', ))
+b = Test0("B", roles=('b', ))
+ab = Test1("AB", roles=('a', 'b'))
 
 
 @task
-def deploy():
+def conf():
     '''set environment variables'''
     env['roledefs'] = {
         'a': ['vmubuntu1', 'vmubuntu0'],
         'b': ['vmubuntu0']
     }
+
+
+@task
+def deploy():
+    execute('conf')
     execute('services.deploy')
+
+
+@task
+@roles('b',)
+def hello_b():
+    run('echo hello B!')
+
+fabmisc.task_group('a_only', [a, ab])
+fabmisc.task_group('b_only', [b, ab])
+# fabmisc.task_group('b_only', [b, ab, hello_b]) <= not work....

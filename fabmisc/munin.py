@@ -71,7 +71,7 @@ class Munin(NginxAlias, service.Service):
 
     def getCommands(self):
         d = super(Munin, self).getCommands()
-        d['create'] = self.create
+        d['create'] = 'create'
         return d
 
     def create(self):

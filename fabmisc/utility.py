@@ -2,6 +2,7 @@
 import os
 import uuid
 
+from fabric import api as fab_api
 from fabric.state import env
 from fabric.operations import run, sudo
 from fabric.context_managers import hide
@@ -129,7 +130,7 @@ def task_group(name, task_list):
         for i in task_list:
             if hasattr(i, 'run'):
                 i = getattr(i, 'run')
-            i()
+            fab_api.execute(i)
     top_package = __import__(os.path.splitext(
         os.path.split(env.real_fabfile)[1])[0])
     setattr(top_package, name, task(name=name)(run_all))

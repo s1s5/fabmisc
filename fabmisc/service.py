@@ -38,17 +38,16 @@ class Service(ManagedTask):
         self.service('restart')
 
     def getCommands(self):
-        d = {}
-        d['deploy'] = self.run
-        d['start'] = self.start
-        d['stop'] = self.stop
-        d['restart'] = self.restart
+        d = super(Service, self).getCommands()
+        d['start'] = 'start'
+        d['stop'] = 'stop'
+        d['restart'] = 'restart'
         return d
 
     @classmethod
     def __runAll(self, method_name):
         for i in Service.__services:
-            fab_api.execute(i._decorator(getattr(i, method_name)))
+            fab_api.execute(getattr(i, method_name))
 
     @classmethod
     def __deployAll(self):
