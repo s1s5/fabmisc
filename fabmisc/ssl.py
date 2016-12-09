@@ -24,7 +24,7 @@ class Ssl(ManagedTask):
     def __init__(self, certificates=None, private_key=None,
                  private_key_password=None,
                  remote_path='/etc/nginx/ssl/site',
-                 regenerate=False, use_sudo=True, **kw):
+                 regenerate=None, use_sudo=True, **kw):
         super(Ssl, self).__init__(**kw)
         self.certificates = certificates
         self.private_key = private_key
@@ -55,7 +55,7 @@ class Ssl(ManagedTask):
                 run('openssl x509 -req -days 365 -in server.csr '
                     '-signkey server.key -out server.crt')
             else:
-                for i in enumerate(self.certificates):
+                for i in self.certificates:
                     put(i, 'crt')
                     run('cat crt >> server.crt')
                 put(self.private_key, 'server.org.key')

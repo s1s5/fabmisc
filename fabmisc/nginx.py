@@ -139,7 +139,7 @@ class NginxSite(ManagedTask):
         self.kw_dict = kw_dict
         self.locations = locations
         self.ssl = ssl
-        self.server_name = self.server_name
+        self.server_name = server_name
 
     def run(self):
         available = '/etc/nginx/sites-available/{}'.format(self.site_name)

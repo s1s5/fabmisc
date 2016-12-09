@@ -14,7 +14,7 @@ class ManagedTask(object):
     __module = None
 
     def __init__(self, hosts=(), roles=(), runs_once=False, **kw):
-        super(ManagedTask, self).__init__(**kw)
+        super(ManagedTask, self).__init__()
         if 'name' in kw:
             self.name = kw['name']
         else:

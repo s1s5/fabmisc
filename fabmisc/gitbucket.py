@@ -55,6 +55,31 @@ class GitBucket(ManagedTask):
         sudo('rm -rf {home}/backup-{uuid}'.format(
             home=self.gitbucket_home, uuid=i,))
 
+    def _move2postgres(self):
+        def psql(command):
+            run('PGPASSWORD={} psql -d {} -U {} -h {} -c "{}"'.format(
+                self.db_table.password,
+                self.db_table.table,
+                self.db_table.user,
+                self.db_table.hostname,
+                command))
+        psql("SELECT setval('label_label_id_seq', "
+             "(select max(label_id) + 1 from label));")
+        psql("SELECT setval('activity_activity_id_seq', "
+             "(select max(activity_id) + 1 from activity));")
+        psql("SELECT setval('access_token_access_token_id_seq', "
+             "(select max(access_token_id) + 1 from access_token));")
+        psql("SELECT setval('commit_comment_comment_id_seq', "
+             "(select max(comment_id) + 1 from commit_comment));")
+        psql("SELECT setval('commit_status_commit_status_id_seq', "
+             "(select max(commit_status_id) + 1 from commit_status));")
+        psql("SELECT setval('milestone_milestone_id_seq', "
+             "(select max(milestone_id) + 1 from milestone));")
+        psql("SELECT setval('issue_comment_comment_id_seq', "
+             "(select max(comment_id) + 1 from issue_comment));")
+        psql("SELECT setval('ssh_key_ssh_key_id_seq', "
+             "(select max(ssh_key_id) + 1 from ssh_key));")
+
     def run(self):
         run('mkdir -p {}'.format('Downloads'))
         with cd('~/Downloads'):
@@ -111,4 +136,5 @@ class GitBucket(ManagedTask):
     def getCommands(self):
         d = super(GitBucket, self).getCommands()
         d['backup'] = '_backup'
+        d['move2postgres'] = '_move2postgres'
         return d

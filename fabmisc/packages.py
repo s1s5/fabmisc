@@ -25,7 +25,8 @@ class Packages(ManagedTask):
     def run(self):
         with hide('stdout'):
             sudo('apt-get update')
-            for package in self.apt_packages + ['python-pip', 'locales']:
+            for package in self.apt_packages + [
+                    'python-pip', 'locales', 'language-pack-ja']:
                 sudo('apt-get install {} -y'.format(package), pty=False)
 
             for package in self.pip_packages + [
