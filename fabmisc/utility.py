@@ -128,7 +128,7 @@ def lazy_property(klass=None):
 def task_group(name, task_list):
     def run_all():
         for i in task_list:
-            if hasattr(i, 'run'):
+            if not callable(i):
                 i = getattr(i, 'run')
             fab_api.execute(i)
     top_package = __import__(os.path.splitext(

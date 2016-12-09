@@ -63,8 +63,7 @@ def deploy():
 @task
 @roles('b',)
 def hello_b():
-    run('echo hello B!')
+    run('echo hello B!; ifconfig | grep 192.168')
 
 fabmisc.task_group('a_only', [a, ab])
-fabmisc.task_group('b_only', [b, ab])
-# fabmisc.task_group('b_only', [b, ab, hello_b]) <= not work....
+fabmisc.task_group('b_only', [b, ab, hello_b])
