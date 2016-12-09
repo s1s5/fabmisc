@@ -44,13 +44,17 @@ class GitBucket(NginxProxy, ManagedTask):
         self.tomcat = tomcat
         self.plugins = plugins
         self.db_table = db_table
+        self.backup_with_url = False
 
     def _backup(self):
         i = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        sudo('{home}/backup.sh {home} {home}/backup-{uuid} '
-             'http://localhost:{port}/gitbucket/database/backup'.format(
-                 home=self.gitbucket_home, uuid=i, port=self.tomcat.port
-             ))
+        backup_url = ''
+        if self.backup_with_url:
+            backup_url = ('http://localhost:{port}/gitbucket/'
+                          'database/backup'.format(port=self.tomcat.port))
+        sudo('{home}/backup.sh {home} {home}/backup-{uuid} {url}'.format(
+            home=self.gitbucket_home, uuid=i, url=backup_url
+        ))
         with cd(self.gitbucket_home):
             sudo('tar -cf - backup-{uuid} | '
                  'xz -9 -c - > {home}/backup-{uuid}.tar.xz'.format(
@@ -60,13 +64,7 @@ class GitBucket(NginxProxy, ManagedTask):
             home=self.gitbucket_home, uuid=i,))
 
     def _move2postgres(self):
-        def psql(command):
-            run('PGPASSWORD={} psql -d {} -U {} -h {} -c "{}"'.format(
-                self.db_table.password,
-                self.db_table.table,
-                self.db_table.user,
-                self.db_table.hostname,
-                command))
+        psql = self.db_table.sql
         psql("SELECT setval('label_label_id_seq', "
              "(select max(label_id) + 1 from label));")
         psql("SELECT setval('activity_activity_id_seq', "

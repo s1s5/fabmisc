@@ -2,11 +2,14 @@
 import os
 
 from fabric.state import env
+from fabric.operations import run
 from fabric.operations import sudo
+from fabric.contrib.console import confirm
 from fabric.context_managers import hide
 from fabric.contrib.files import upload_template
 from fabric.api import cd
 from fabtools import postgres as funcs
+from fabric.api import warn_only
 
 from . import service
 from .managed_task import ManagedTask
@@ -68,3 +71,25 @@ class PostgresTable(TableMixin, ManagedTask):
         if not funcs.database_exists(self.table):
             funcs.create_database(
                 self.table, user, locale='ja_JP.utf8')
+
+    def sql(self, command):
+        run('PGPASSWORD={} psql -d {} -U {} -h {} -c "{}"'.format(
+            self.password,
+            self.table,
+            self.user,
+            self.hostname,
+            command))
+
+    def backup(self, filename):
+        run('PGPASSWORD={} pg_dump -d {} -U {} -h {} | xz -9 -c - > {}'.format(
+            self.password, self.table, self.user, self.hostname, filename))
+
+    def restore(self, filename):
+        if not confirm('Are you sure to delete database?', default=False):
+            return
+        with warn_only():
+            sudo('sudo -u postgres dropdb {}'.format(self.table))
+        funcs.create_database(
+            self.table, self.user, locale='ja_JP.utf8')
+        sudo('unxz -c {} | sudo -u postgres psql -d {}'.format(
+            filename, self.table))
