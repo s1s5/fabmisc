@@ -126,10 +126,11 @@ class NginxSite(ManagedTask):
     kw_dict = lazy_property()
     locations = lazy_property()
     ssl = lazy_property(Ssl)
+    server_name = lazy_property((str, unicode))
 
     def __init__(self, nginx, site_name, site_conf_filename='nginx_site.conf',
                  template_dir=TEMPLATE_DIR, kw_dict={}, locations=(), ssl=None,
-                 **kw):
+                 server_name='', **kw):
         super(NginxSite, self).__init__(**kw)
         self.nginx = nginx
         self.site_name = site_name
@@ -138,6 +139,7 @@ class NginxSite(ManagedTask):
         self.kw_dict = kw_dict
         self.locations = locations
         self.ssl = ssl
+        self.server_name = self.server_name
 
     def run(self):
         available = '/etc/nginx/sites-available/{}'.format(self.site_name)
@@ -145,6 +147,7 @@ class NginxSite(ManagedTask):
         context = dict(
             locations=self.locations,
             ssl=self.ssl,
+            server_name=self.server_name,
         )
         context.update(self.kw_dict)
         upload_template(self.site_conf_filename, available,
