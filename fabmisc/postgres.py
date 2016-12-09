@@ -14,7 +14,7 @@ from fabric.api import warn_only
 from . import service
 from .managed_task import ManagedTask
 from .utility import lazy_property
-from .db import TableMixin
+from .db import DatabaseMixin
 
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
@@ -59,7 +59,7 @@ class Postgres(service.Service):
         self.restart()
 
 
-class PostgresTable(TableMixin, ManagedTask):
+class PostgresDatabase(DatabaseMixin, ManagedTask):
     def run(self):
         user = env['user']
         if self.user:
@@ -68,28 +68,28 @@ class PostgresTable(TableMixin, ManagedTask):
         if not funcs.user_exists(user):
             funcs.create_user(user, self.password)
 
-        if not funcs.database_exists(self.table):
+        if not funcs.database_exists(self.database):
             funcs.create_database(
-                self.table, user, locale='ja_JP.utf8')
+                self.database, user, locale='ja_JP.utf8')
 
     def sql(self, command):
         run('PGPASSWORD={} psql -d {} -U {} -h {} -c "{}"'.format(
             self.password,
-            self.table,
+            self.database,
             self.user,
             self.hostname,
             command))
 
     def backup(self, filename):
         run('PGPASSWORD={} pg_dump -d {} -U {} -h {} | xz -9 -c - > {}'.format(
-            self.password, self.table, self.user, self.hostname, filename))
+            self.password, self.database, self.user, self.hostname, filename))
 
     def restore(self, filename):
         if not confirm('Are you sure to delete database?', default=False):
             return
         with warn_only():
-            sudo('sudo -u postgres dropdb {}'.format(self.table))
+            sudo('sudo -u postgres dropdb {}'.format(self.database))
         funcs.create_database(
-            self.table, self.user, locale='ja_JP.utf8')
+            self.database, self.user, locale='ja_JP.utf8')
         sudo('unxz -c {} | sudo -u postgres psql -d {}'.format(
-            filename, self.table))
+            filename, self.database))

@@ -14,8 +14,8 @@ from .nginx import NginxProxy
 from .tomcat import Tomcat
 from .managed_task import ManagedTask
 from .utility import lazy_property
-from .postgres import PostgresTable
-from .db import TableMixin
+from .postgres import PostgresDatabase
+from .db import DatabaseMixin
 
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
@@ -26,10 +26,10 @@ class GitBucket(NginxProxy, ManagedTask):
     version = lazy_property((str, unicode))
     tomcat = lazy_property(Tomcat)
     plugins = lazy_property()
-    db_table = lazy_property(TableMixin)
+    db = lazy_property(DatabaseMixin)
 
     def __init__(self, version, tomcat,
-                 plugins=dict(), db_table=None, **kw):
+                 plugins=dict(), db=None, **kw):
         if 'pattern' not in kw:
             kw['pattern'] = '/gitbucket'
         if 'rewrite_url' not in kw:
@@ -43,7 +43,7 @@ class GitBucket(NginxProxy, ManagedTask):
         self.version = version
         self.tomcat = tomcat
         self.plugins = plugins
-        self.db_table = db_table
+        self.db = db
         self.backup_with_url = False
 
     def _backup(self):
@@ -64,7 +64,7 @@ class GitBucket(NginxProxy, ManagedTask):
             home=self.gitbucket_home, uuid=i,))
 
     def _move2postgres(self):
-        psql = self.db_table.sql
+        psql = self.db.sql
         psql("SELECT setval('label_label_id_seq', "
              "(select max(label_id) + 1 from label));")
         psql("SELECT setval('activity_activity_id_seq', "
@@ -104,14 +104,14 @@ class GitBucket(NginxProxy, ManagedTask):
             '{}/backup.sh'.format(self.gitbucket_home), use_sudo=True)
         sudo('chmod +x {}/backup.sh'.format(self.gitbucket_home))
 
-        if self.db_table:
+        if self.db:
             d = dict(
-                table=self.db_table.table,
-                user=self.db_table.user,
-                password=self.db_table.password,
-                hostname=self.db_table.hostname,
+                database=self.db.database,
+                user=self.db.user,
+                password=self.db.password,
+                hostname=self.db.hostname,
             )
-            if isinstance(self.db_table, PostgresTable):
+            if isinstance(self.db, PostgresDatabase):
                 d['db_type'] = 'postgresql'
             else:
                 raise Exception("Unknown database type")

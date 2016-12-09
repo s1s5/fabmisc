@@ -22,10 +22,10 @@ packages = fabmisc.Packages(
     lazy(env, 'apt', []),
     lazy(env, 'pip', []))
 postgres = fabmisc.Postgres('9.5')
-postgres_table = fabmisc.PostgresTable(
+postgres_database = fabmisc.PostgresDatabase(
     'test_db_name', 'test_user', 'test_pass')
 
 
-# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgrestable.backup_to_local:/tmp/hoge.xz  # NOQA
+# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgresdatabase.backup_to_local:/tmp/hoge.xz  # NOQA
 # $ unxz -c /tmp/hoge.xz
-# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgrestable.restore_from_local:/tmp/hoge.xz  # NOQA
+# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgresdatabase.restore_from_local:/tmp/hoge.xz  # NOQA

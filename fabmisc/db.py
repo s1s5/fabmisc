@@ -7,16 +7,16 @@ from fabric.operations import put
 from .utility import lazy_property
 
 
-class TableMixin(object):
-    table = lazy_property((str, unicode))
+class DatabaseMixin(object):
+    database = lazy_property((str, unicode))
     user = lazy_property((str, unicode))
     password = lazy_property((str, unicode))
     hostname = lazy_property((str, unicode))
 
-    def __init__(self, table, user=None,
+    def __init__(self, database, user=None,
                  password=None, hostname='127.0.0.1', **kw):
-        super(TableMixin, self).__init__(**kw)
-        self.table = table
+        super(DatabaseMixin, self).__init__(**kw)
+        self.database = database
         self.user = user
         self.password = password
         self.hostname = hostname
@@ -29,7 +29,7 @@ class TableMixin(object):
             'backup_to_local': 'backup_to_local',
             'restore_from_local': 'restore_from_local',
         }
-        org.update(super(TableMixin, self).getCommands())
+        org.update(super(DatabaseMixin, self).getCommands())
         return org
 
     def sql(self, command):

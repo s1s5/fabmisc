@@ -18,7 +18,7 @@ fabmisc = imp.load_module(
 
 nginx = fabmisc.Nginx()
 postgres = fabmisc.Postgres('9.5')
-postgres_table = fabmisc.PostgresTable(
+postgres_database = fabmisc.PostgresDatabase(
     'gitbucket', 'gitbucket', 'gitbucket_pass')
 plugins = {
     'gitbucket-h2-backup-plugin':
@@ -37,7 +37,7 @@ plugins = {
 java = fabmisc.OracleJava()
 tomcat = fabmisc.Tomcat('8', java.getJavaHome())
 gitbucket = fabmisc.GitBucket(
-    '4.7.1', tomcat, plugins=plugins, db_table=postgres_table)
+    '4.7.1', tomcat, plugins=plugins, db=postgres_database)
 gitbucket_site = fabmisc.NginxSite(nginx, 'tomcat',
                                    locations=(tomcat, ))
 
