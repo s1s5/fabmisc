@@ -10,6 +10,7 @@ from fabric.context_managers import cd
 from fabric.contrib.files import exists
 from fabric.contrib.files import put
 
+from .nginx import NginxProxy
 from .tomcat import Tomcat
 from .managed_task import ManagedTask
 from .utility import lazy_property
@@ -20,7 +21,7 @@ from .db import TableMixin
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 
-class GitBucket(ManagedTask):
+class GitBucket(NginxProxy, ManagedTask):
     gitbucket_home = lazy_property((str, unicode))
     version = lazy_property((str, unicode))
     tomcat = lazy_property(Tomcat)
@@ -29,10 +30,13 @@ class GitBucket(ManagedTask):
 
     def __init__(self, version, tomcat,
                  plugins=dict(), db_table=None, **kw):
-        # if 'pattern' not in kw:
-        #     kw['pattern'] = '/gitbucket'
-        # if 'rewrite_url' not in kw:
-        #     kw['rewrite_url'] = False
+        if 'pattern' not in kw:
+            kw['pattern'] = '/gitbucket'
+        if 'rewrite_url' not in kw:
+            kw['rewrite_url'] = False
+        # if 'proxy_path' not in kw:
+        #     kw['proxy_path'] = '/gitbucket/$1'
+        kw['proxy_port'] = lambda: self.tomcat.proxy_port
         super(GitBucket, self).__init__(**kw)
         self.gitbucket_home = '/usr/share/{}/.gitbucket'.format(
             tomcat.name)
