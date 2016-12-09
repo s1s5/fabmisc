@@ -2,13 +2,14 @@
 import os
 import imp
 
-from fabric.tasks import Task
+# from fabric.tasks import Task
 from fabric.state import env
 from fabric.decorators import task
 from fabric import api as fab_api
 
 
-class ManagedTask(Task):
+class ManagedTask(object):
+    name = 'undefined'
     __tasks = []
     __module = None
 

@@ -1,10 +1,13 @@
 # coding: utf-8
+import os
 import uuid
 
+from fabric.state import env
 from fabric.operations import run, sudo
 from fabric.context_managers import hide
 from fabric.context_managers import shell_env
 from fabric.contrib.files import exists
+from fabric.decorators import task
 
 
 def _run_or_sudo(use_sudo):
@@ -119,3 +122,15 @@ def lazy_property(klass=None):
         setattr(self, '_uuid_' + prop_name, recv_lazy(value, klass))
 
     return property(getter, setter)
+
+
+def task_group(name, task_list):
+    def run_all():
+        for i in task_list:
+            if hasattr(i, 'run'):
+                i = getattr(i, 'run')
+            i()
+    top_package = __import__(os.path.splitext(
+        os.path.split(env.real_fabfile)[1])[0])
+    setattr(top_package, name, task(name=name)(run_all))
+    return getattr(top_package, name)
