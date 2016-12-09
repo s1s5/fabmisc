@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import uuid
 import time
 from datetime import datetime
 
@@ -46,19 +47,30 @@ class GitBucket(NginxProxy, ManagedTask):
         self.db = db
         self.backup_with_url = False
 
-    def _backup(self):
+    def backup(self, filename=None):
         i = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        if filename is None:
+            filename = '{home}/backup-{uuid}.tar.bz2'.format(
+                home=self.gitbucket_home, uuid=i)
         backup_url = ''
         if self.backup_with_url:
+            # TODO(sawai): not support allow_account_registration=false, not h2
             backup_url = ('http://localhost:{port}/gitbucket/'
                           'database/backup'.format(port=self.tomcat.port))
         sudo('{home}/backup.sh {home} {home}/backup-{uuid} {url}'.format(
             home=self.gitbucket_home, uuid=i, url=backup_url
         ))
+        if self.db:
+            tmp_file = '/tmp/{}'.format(uuid.uuid4().hex)
+            self.db.backup(tmp_file)
+            sudo('cp {tmp_file} {home}/backup-{uuid}/'
+                 'database.backup.bz2'.format(
+                     tmp_file=tmp_file, home=self.gitbucket_home, uuid=i))
+            run('rm {}'.format(tmp_file))
         with cd(self.gitbucket_home):
-            sudo('tar -cf - backup-{uuid} | '
-                 'xz -9 -c - > {home}/backup-{uuid}.tar.xz'.format(
-                     home=self.gitbucket_home, uuid=i
+            sudo('nice -n 19 tar -cf - backup-{uuid} | '
+                 'nice -n 19 bzip2 -9 -c > {filename}'.format(
+                     home=self.gitbucket_home, uuid=i, filename=filename
                  ))
         sudo('rm -rf {home}/backup-{uuid}'.format(
             home=self.gitbucket_home, uuid=i,))
@@ -137,6 +149,6 @@ class GitBucket(NginxProxy, ManagedTask):
 
     def getCommands(self):
         d = super(GitBucket, self).getCommands()
-        d['backup'] = '_backup'
+        d['backup'] = 'backup'
         d['move2postgres'] = '_move2postgres'
         return d

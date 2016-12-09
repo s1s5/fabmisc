@@ -42,13 +42,13 @@ class DatabaseMixin(object):
         raise NotImplementedError()
 
     def backup_to_local(self, filename):
-        tmp_filename = '/tmp/{}.backup.xz'.format(uuid.uuid4().hex)
+        tmp_filename = '/tmp/{}.backup.tmp'.format(uuid.uuid4().hex)
         self.backup(tmp_filename)
         get(remote_path=tmp_filename, local_path=filename)
         run('rm {}'.format(tmp_filename))
 
     def restore_from_local(self, filename):
-        tmp_filename = '/tmp/{}.backup.xz'.format(uuid.uuid4().hex)
+        tmp_filename = '/tmp/{}.backup.tmp'.format(uuid.uuid4().hex)
         put(remote_path=tmp_filename, local_path=filename)
         self.restore(tmp_filename)
         run('rm {}'.format(tmp_filename))

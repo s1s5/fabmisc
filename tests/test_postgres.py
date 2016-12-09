@@ -26,6 +26,6 @@ postgres_database = fabmisc.PostgresDatabase(
     'test_db_name', 'test_user', 'test_pass')
 
 
-# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgresdatabase.backup_to_local:/tmp/hoge.xz  # NOQA
-# $ unxz -c /tmp/hoge.xz
-# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgresdatabase.restore_from_local:/tmp/hoge.xz  # NOQA
+# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgresdatabase.backup_to_local:/tmp/hoge.bz2  # NOQA
+# $ cat /tmp/hoge.bz2 | bzip2 -d -c
+# $ fab -f test_postgres.py -H vmubuntu0 tasks.postgresdatabase.restore_from_local:/tmp/hoge.bz2  # NOQA

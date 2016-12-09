@@ -81,7 +81,7 @@ class PostgresDatabase(DatabaseMixin, ManagedTask):
             command))
 
     def backup(self, filename):
-        run('PGPASSWORD={} pg_dump -d {} -U {} -h {} | xz -9 -c - > {}'.format(
+        run('PGPASSWORD={} pg_dump -d {} -U {} -h {} | bzip2 -9 -c > {}'.format(
             self.password, self.database, self.user, self.hostname, filename))
 
     def restore(self, filename):
@@ -91,5 +91,5 @@ class PostgresDatabase(DatabaseMixin, ManagedTask):
             sudo('sudo -u postgres dropdb {}'.format(self.database))
         funcs.create_database(
             self.database, self.user, locale='ja_JP.utf8')
-        sudo('unxz -c {} | sudo -u postgres psql -d {}'.format(
+        sudo('bzip2 -d -c {} | sudo -u postgres psql -d {}'.format(
             filename, self.database))
