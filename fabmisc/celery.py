@@ -1,11 +1,14 @@
 # coding: utf-8
+from fabric.state import env
 from fabric.operations import run as fab_run
 from fabric.context_managers import cd
 from fabric.operations import sudo
-from . import service
+
 from .rabbitmq import RabbitmqBroker
 from .virtualenv import Virtualenv
 from .utility import lazy_property
+from . import cron
+from . import service
 
 
 class Celery(service.Service):
@@ -32,24 +35,31 @@ class Celery(service.Service):
             with cd(self.work_dir):
                 func()
 
+    def getStartCommandString(self):
+        ext = ''
+        if self.broker:
+            ext += '--broker=amqp://{}:{}@{}:{}/{} '.format(
+                self.broker.user, self.broker.password,
+                self.broker.hostname, self.broker.port, self.broker.vhost)
+        return ('celery multi start {worker} -A {proj} --loglevel=INFO '
+                '--pidfile="/tmp/celery_{worker}.pid" '
+                '--logfile="/var/log/celery/{worker}.log" {ext}'.format(
+                    worker=self.worker_name, proj=self.project_name, ext=ext
+                ))
+
     def start(self):
         ext = ''
         if self.broker:
             ext += '--broker=amqp://{}:{}@{}:{}/{} '.format(
                 self.broker.user, self.broker.password,
                 self.broker.hostname, self.broker.port, self.broker.vhost)
-        self.__run(lambda: fab_run(
-            'celery multi start {} -A {} --loglevel=INFO '
-            '--pidfile="/var/run/celery/%n.pid" '
-            '--logfile="/var/log/celery/%n.log" {}'.format(
-                self.worker_name, self.project_name, ext
-            )))
+        self.__run(lambda: fab_run(self.getStartCommandString()))
 
     def stop(self):
         self.__run(lambda: fab_run(
-            'celery multi stopwait {} '
-            '--pidfile="/var/run/celery/%n.pid" '.format(
-                self.worker_name
+            'celery multi stopwait {worker} '
+            '--pidfile="/tmp/celery_{worker}.pid" '.format(
+                worker=self.worker_name
             )))
 
     def restart(self):
@@ -57,8 +67,23 @@ class Celery(service.Service):
         self.start()
 
     def run(self):
-        sudo('mkdir -p /var/run/celery')
-        sudo('chmod 1777 /var/run/celery')
         sudo('mkdir -p /var/log/celery')
         sudo('chmod 1777 /var/log/celery')
+
+        path = self.virtualenv.getPath(self.work_dir)
+        workon = ''
+        if self.virtualenv:
+            workon = (';source /usr/local/bin/virtualenvwrapper.sh;'
+                      ' workon {}; cd {}').format(
+                          self.virtualenv.getVEName(), path)
+        key = 'celery_{} {}@{}'.format(
+            self.project_name, self.worker_name, path)
+        cron.Cron({
+            key: (
+                "@reboot su {} -c 'cd ~; source .bashrc{}; {}'".format(
+                    env['user'], workon,
+                    self.getStartCommandString())
+            ),
+        }, for_root=True).run()
+
         self.restart()

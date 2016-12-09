@@ -1,10 +1,12 @@
 # coding: utf-8
 import os
 
+from fabric.operations import sudo
+from fabric.contrib.files import exists
 from fabric.state import env
 from fabric.operations import run
 from fabric.context_managers import cd
-from fabric.contrib.files import upload_template
+# from fabric.contrib.files import upload_template
 
 from . import cron
 from . import service
@@ -22,6 +24,15 @@ class Gunicorn(NginxProxy, service.Service):
     shell_filename = lazy_property((str, unicode))
     conf_filename = lazy_property((str, unicode))
     virtualenv = lazy_property(Virtualenv)
+    workers = lazy_property(int)
+    threads = lazy_property(int)
+    timeout = lazy_property(int)
+    _reload = lazy_property((str, unicode))
+    pidfile = lazy_property((str, unicode))
+    umask = lazy_property((str, unicode))
+    accesslog = lazy_property((str, unicode))
+    errorlog = lazy_property((str, unicode))
+    loglevel = lazy_property((str, unicode))
 
     def __init__(self, app_name, work_dir=None,
                  shell_filename='gunicorn.sh',
@@ -34,34 +45,81 @@ class Gunicorn(NginxProxy, service.Service):
         self.conf_filename = conf_filename
         self.virtualenv = virtualenv
 
-    def service(self, command, *args, **kw):
+        self.workers = kw.get('workers', 4)  # -w
+        self.threads = kw.get('threads', 1)  # --threads
+        self.timeout = kw.get('timeout', 60)  # -t
+        self._reload = '--reload' if kw.get('reload', False) else ''
+        self.pidfile = kw.get('pidfile', self.getDefaultPidFile)  # -p
+        self.umask = kw.get('umask', '0002')  # -m
+        self.accesslog = kw.get('accesslog',
+                                self.getDefaultAccessLog)  # --access-logfile
+        self.errorlog = kw.get('errorlog',
+                               self.getDefaultErrorLog)  # --error-logfile
+        self.loglevel = kw.get('loglevel', 'debug')  # --log-level
+
+    def getCommandString(self):
+        options = [
+            '--name {}'.format(self.app_name),
+            '-b {}:{}'.format(
+                self.proxy_host,
+                self.proxy_port),
+            '-D',
+            '-w {}'.format(self.workers),
+            '--threads {}'.format(self.threads),
+            '-t {}'.format(self.timeout),
+            '{}'.format(self._reload),
+            '-p {}'.format(self.pidfile),
+            '-m {}'.format(self.umask),
+            '--access-logfile {}'.format(self.accesslog),
+            '--error-logfile {}'.format(self.errorlog),
+            '--log-level {}'.format(self.loglevel),
+        ]
+        return 'gunicorn {} {}'.format(self.app_name, ' '.join(options))
+
+    def start(self):
+        self.stop()
+
         if self.virtualenv:
             with self.virtualenv.prefix(self.work_dir):
-                run('./{} {}'.format(self.shell_filename, command), pty=False)
+                run(self.getCommandString(), pty=False)
         else:
             with cd(self.work_dir):
-                run('./{} {}'.format(self.shell_filename, command), pty=False)
+                run(self.getCommandString(), pty=False)
+
+    def stop(self):
+        if exists(self.pidfile):
+            run("kill -TERM `cat {}`".format(self.pidfile))
+            run("rm {}".format(self.pidfile))
+
+    def restart(self):
+        self.stop()
+        self.start()
 
     def run(self):
+        sudo('mkdir -p /var/log/gunicorn')
+        sudo('chmod 1777 /var/log/gunicorn')
+
         path = self.virtualenv.getPath(self.work_dir)
-        upload_template('gunicorn_conf.py',
-                        os.path.join(path, self.conf_filename),
-                        context=dict(gunicorn=self), template_dir=TEMPLATE_DIR,
-                        use_jinja=True)
-        upload_template('gunicorn.sh',
-                        os.path.join(path, self.shell_filename),
-                        context=dict(gunicorn=self), template_dir=TEMPLATE_DIR,
-                        use_jinja=True, mode='0755')
         workon = ''
         if self.virtualenv:
-            workon = '; workon {}; cd {}'.format(
-                self.virtualenv.getVEName(), path)
-        c = cron.Cron({
+            workon = (';source /usr/local/bin/virtualenvwrapper.sh;'
+                      ' workon {}; cd {}').format(
+                          self.virtualenv.getVEName(), path)
+        cron.Cron({
             'gunicorn_{}@{}'.format(self.app_name, path): (
-                "@reboot su {} -c 'cd ~; source .bashrc{}; ./{} start'".format(
+                "@reboot su {} -c 'cd ~; source .bashrc{}; {}'".format(
                     env['user'], workon,
-                    self.shell_filename)
+                    self.getCommandString())
             ),
-        }, for_root=True)
-        c.run()
+        }, for_root=True).run()
+
         self.restart()
+
+    def getDefaultPidFile(self):
+        return "/tmp/gunicorn_app_{}.pid".format(self.proxy_port)
+
+    def getDefaultAccessLog(self):
+        return "/var/log/gunicorn/app_access_{}.log".format(self.proxy_port)
+
+    def getDefaultErrorLog(self):
+        return "/var/log/gunicorn/app_error_{}.log".format(self.proxy_port)
