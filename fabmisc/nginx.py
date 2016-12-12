@@ -4,7 +4,7 @@ import os
 import StringIO
 import subprocess
 
-from fabric.operations import put
+from fabric.operations import run, sudo, put
 from fabric.contrib.files import upload_template
 
 from . import service
@@ -60,8 +60,11 @@ class NginxHtpasswd(ManagedTask):
         stdout, stderr = p.communicate()
         if p.returncode:
             raise Exception(stdout + "\n" + stderr)
-
-        put(remote_path=self.dst_htpasswd,
+        _run = run
+        if self.use_sudo:
+            _run = sudo
+        _run('mkdir -p {}'.format(os.path.dirname(self.path)))
+        put(remote_path=self.path,
             local_path=StringIO.StringIO(stdout),
             use_sudo=self.use_sudo)
 

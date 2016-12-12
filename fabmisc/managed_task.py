@@ -34,6 +34,23 @@ class ManagedTask(object):
             setattr(self, f, self._decorator(getattr(self, f)))
         self.__createTasks()
 
+    def isValidInCurrentHost(self):
+        b = True
+        if self.hosts and (env.host_strig not in self.hosts):
+            b = False
+        if self.roles:
+            t = False
+            for role in self.roles:
+                if self.host_strig in env.roledefs[role]:
+                    t = True
+                    break
+            if self.hosts:
+                if ((env.host_strig not in self.hosts) != t):
+                    raise Exception("Cannot determine install or not")
+            b = t
+        return b
+    valid = property(isValidInCurrentHost)
+
     def _getModuleName(self):
         return "tasks"
 

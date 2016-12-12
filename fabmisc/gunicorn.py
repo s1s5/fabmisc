@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 
+from fabric.api import warn_only
 from fabric.operations import sudo
 from fabric.contrib.files import exists
 from fabric.state import env
@@ -21,8 +22,6 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 class Gunicorn(NginxProxy, service.Service):
     work_dir = lazy_property((str, unicode))
     app_name = lazy_property((str, unicode))
-    shell_filename = lazy_property((str, unicode))
-    conf_filename = lazy_property((str, unicode))
     virtualenv = lazy_property(Virtualenv)
     workers = lazy_property(int)
     threads = lazy_property(int)
@@ -35,14 +34,10 @@ class Gunicorn(NginxProxy, service.Service):
     loglevel = lazy_property((str, unicode))
 
     def __init__(self, app_name, work_dir=None,
-                 shell_filename='gunicorn.sh',
-                 conf_filename='gunicorn_conf.py',
                  virtualenv=None, **kw):
         super(Gunicorn, self).__init__(**kw)
         self.app_name = app_name
         self.work_dir = work_dir
-        self.shell_filename = shell_filename
-        self.conf_filename = conf_filename
         self.virtualenv = virtualenv
 
         self.workers = kw.get('workers', 4)  # -w
@@ -88,7 +83,8 @@ class Gunicorn(NginxProxy, service.Service):
 
     def stop(self):
         if exists(self.pidfile):
-            run("kill -TERM `cat {}`".format(self.pidfile))
+            with warn_only():
+                run("kill -TERM `cat {}`".format(self.pidfile))
             run("rm {}".format(self.pidfile))
 
     def restart(self):

@@ -93,6 +93,8 @@ class LazyAccessor(object):
                 value = self.default_value
         else:
             value = self.dictionary[self.key]
+        if value is None:
+            return value
         if self.klass and (not isinstance(value, self.klass)):
             raise TypeError('value={}, type={}, expected_type={}'.format(
                 value, type(value), self.klass))
@@ -125,13 +127,20 @@ def lazy_property(klass=None):
     return property(getter, setter)
 
 
-def task_group(name, task_list):
+def task_group(name, task_list, package=None):
     def run_all():
         for i in task_list:
-            if not callable(i):
+            if isinstance(i, (str, unicode)):
+                pass
+            elif not callable(i):
                 i = getattr(i, 'run')
             fab_api.execute(i)
-    top_package = __import__(os.path.splitext(
-        os.path.split(env.real_fabfile)[1])[0])
-    setattr(top_package, name, task(name=name)(run_all))
-    return getattr(top_package, name)
+    if package is None:
+        package = __import__(os.path.splitext(
+            os.path.split(env.real_fabfile)[1])[0])
+    if isinstance(package, dict):
+        package[name] = task(name=name)(run_all)
+        return package[name]
+    else:
+        setattr(package, name, task(name=name)(run_all))
+        return getattr(package, name)

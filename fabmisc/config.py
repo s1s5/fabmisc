@@ -4,7 +4,7 @@ def expand_config(_env, d):
         if isinstance(d, dict):
             for key, value in d.items():
                 if parent is not None:
-                    key = parent + '_' + key
+                    key = parent + '.' + key
                 if isinstance(value, dict):
                     _set_env(value, key)
                 else:
