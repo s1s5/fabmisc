@@ -53,13 +53,16 @@ class Gunicorn(NginxProxy, service.Service):
         self.loglevel = kw.get('loglevel', 'debug')  # --log-level
 
     def getCommandString(self):
+        workers = self.workers
+        if workers <= 0:
+            workers = 2 * int(run('nproc')) + 1
         options = [
             '--name {}'.format(self.app_name),
             '-b {}:{}'.format(
                 self.proxy_host,
                 self.proxy_port),
             '-D',
-            '-w {}'.format(self.workers),
+            '-w {}'.format(workers),
             '--threads {}'.format(self.threads),
             '-t {}'.format(self.timeout),
             '{}'.format(self._reload),
@@ -85,7 +88,6 @@ class Gunicorn(NginxProxy, service.Service):
         if exists(self.pidfile):
             with warn_only():
                 run("kill -TERM `cat {}`".format(self.pidfile))
-            run("rm {}".format(self.pidfile))
 
     def restart(self):
         self.stop()
