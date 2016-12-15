@@ -38,9 +38,9 @@ def mkdir(path, use_sudo=False, mode=None):
 
 
 def link(src, dst, use_sudo=False):
-    if exists(dst):
-        _run_or_sudo(use_sudo)("rm {}".format(dst))
-    _run_or_sudo(use_sudo)("ln -s {} {}".format(src, dst))
+    # if exists(dst):
+    #     _run_or_sudo(use_sudo)("rm {}".format(dst))
+    _run_or_sudo(use_sudo)("ln -sf {} {}".format(src, dst))
 
 
 def rm(path, use_sudo=False):

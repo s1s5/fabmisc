@@ -68,9 +68,9 @@ class Virtualenv(ManagedTask):
             prefix('WORKON_HOME={}'.format(self._workon_home)), \
             prefix('source /usr/local/bin/virtualenvwrapper.sh'), \
             prefix('workon {}'.format(self._name)):
-
-            run('pip install -U -r {}'.format(self._requirements_filename),
-                pty=False)
+            if self._requirements_filename:
+                run('pip install -U -r {}'.format(self._requirements_filename),
+                    pty=False)
 
     def getVEName(self):
         return self._name
