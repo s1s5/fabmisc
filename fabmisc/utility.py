@@ -17,6 +17,11 @@ def _run_or_sudo(use_sudo):
     return run
 
 
+def apt_update():
+    with hide('stdout'), shell_env(DEBIAN_FRONTEND='noninteractive'):
+        sudo('apt-get update')
+
+
 def apt(package):
     with hide('stdout'), shell_env(DEBIAN_FRONTEND='noninteractive'):
         sudo('apt-get install {} -y'.format(package), pty=False)

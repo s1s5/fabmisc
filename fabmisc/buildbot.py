@@ -82,11 +82,11 @@ class BuildbotMaster(Service):
             NginxProxy(pattern='/buildbot/', proxy_port=self.port,
                        rewrite_url=False),
             NginxProxy(pattern='/buildbot/sse', proxy_port=self.port,
-                       proxy_path='sse/', rewrite_url=False, options=[
+                       proxy_path='/sse/', rewrite_url=False, options=[
                            'proxy_buffering off',
                        ]),
             NginxProxy(pattern='/buildbot/ws', proxy_port=self.port,
-                       proxy_path='ws/', rewrite_url=False, options=[
+                       proxy_path='/ws/', rewrite_url=False, options=[
                            'proxy_http_version 1.1',
                            'proxy_set_header Upgrade $http_upgrade',
                            'proxy_set_header Connection "upgrade"',

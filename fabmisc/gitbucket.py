@@ -33,8 +33,8 @@ class GitBucket(NginxProxy, ManagedTask):
                  plugins=dict(), db=None, **kw):
         if 'pattern' not in kw:
             kw['pattern'] = '/gitbucket'
-        if 'rewrite_url' not in kw:
-            kw['rewrite_url'] = False
+        # if 'rewrite_url' not in kw:
+        #     kw['rewrite_url'] = False
         # if 'proxy_path' not in kw:
         #     kw['proxy_path'] = '/gitbucket/$1'
         kw['proxy_port'] = lambda: self.tomcat.proxy_port

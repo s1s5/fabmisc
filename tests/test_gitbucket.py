@@ -39,7 +39,9 @@ tomcat = fabmisc.Tomcat('8', java.getJavaHome())
 gitbucket = fabmisc.GitBucket(
     '4.7.1', tomcat, plugins=plugins, db=postgres_database)
 gitbucket_site = fabmisc.NginxSite(nginx, 'tomcat',
-                                   locations=(tomcat, ))
+                                   locations=(gitbucket, ))
 
 # # install gitbucket, with_postgres
 # $ fab -f test_gitbucket.py -H <hostname> tasks.run
+# edit /usr/share/tomcat8/.gitbucket/gitbucket.conf
+# base_url=http\://192.168.11.15/tomcat8/gitbucket
