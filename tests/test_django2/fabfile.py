@@ -7,6 +7,7 @@ import fabmisc
 
 env.forward_agent = True
 env.use_ssh_config = True
+env.disable_known_hosts = True
 
 lazy = fabmisc.lazy
 

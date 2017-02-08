@@ -43,7 +43,7 @@ class Celery(service.Service):
                 self.broker.hostname, self.broker.port, self.broker.vhost)
         return ('celery multi start {worker} -A {proj} --loglevel=INFO '
                 '--pidfile="/tmp/celery_{worker}.pid" '
-                '--logfile="/var/log/celery/{worker}.log" {ext}'.format(
+                '--logfile="/var/log/celery-{worker}.log" {ext}'.format(
                     worker=self.worker_name, proj=self.project_name, ext=ext
                 ))
 
