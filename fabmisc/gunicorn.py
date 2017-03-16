@@ -94,8 +94,8 @@ class Gunicorn(NginxProxy, service.Service):
         self.start()
 
     def run(self):
-        sudo('mkdir -p /var/log/gunicorn')
-        sudo('chmod 1777 /var/log/gunicorn')
+        # sudo('mkdir -p /var/log/gunicorn')
+        # sudo('chmod 1777 /var/log/gunicorn')
 
         path = self.virtualenv.getPath(self.work_dir)
         workon = ''
@@ -117,7 +117,7 @@ class Gunicorn(NginxProxy, service.Service):
         return "/tmp/gunicorn_app_{}.pid".format(self.proxy_port)
 
     def getDefaultAccessLog(self):
-        return "/var/log/gunicorn/app_access_{}.log".format(self.proxy_port)
+        return "/tmp/gunicorn_app_access_{}.log".format(self.proxy_port)
 
     def getDefaultErrorLog(self):
-        return "/var/log/gunicorn/app_error_{}.log".format(self.proxy_port)
+        return "/tmp/gunicorn_app_error_{}.log".format(self.proxy_port)

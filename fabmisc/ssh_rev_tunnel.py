@@ -1,4 +1,5 @@
 # coding: utf-8
+import random
 import subprocess
 # import os
 
@@ -7,7 +8,7 @@ from fabric.state import env
 
 class ReverseTunnel(object):
 
-    def __init__(self, local_port, remote_port):
+    def __init__(self, local_port=-1, remote_port=-1):
         self.plist = []
         self.local_port = local_port
         self.remote_port = remote_port
@@ -15,11 +16,21 @@ class ReverseTunnel(object):
     def __enter__(self):
         if self.plist:
             raise Exception()
+
+        if self.remote_port <= 0:
+            remote_port = random.randint(32768, 65535)
+        else:
+            remote_port = self.remote_port
+        if self.local_port <= 0:
+            local_port = random.randint(32768, 65535)
+        else:
+            local_port = self.local_port
+
         self.plist = []
         for i in env['all_hosts']:
             cmd = ['ssh', '-R',
                    '{}:localhost:{}'.format(
-                       self.remote_port, self.local_port),
+                       remote_port, local_port),
                    '-o', 'StrictHostKeyChecking=no',
                    '-o', 'UserKnownHostsFile=/dev/null']
             if 'key_filename' in env and env['key_filename']:
@@ -34,8 +45,10 @@ class ReverseTunnel(object):
         return self
 
     def __exit__(self, type_, value, traceback):
+        from signal import SIGINT
         for p in self.plist:
-            p.terminate()
+            p.send_signal(SIGINT)
+            p.wait()
         self.plist = []
 
 

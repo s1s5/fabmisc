@@ -17,15 +17,17 @@ class Celery(service.Service):
     worker_name = lazy_property((str, unicode))
     broker = lazy_property(RabbitmqBroker)
     virtualenv = lazy_property(Virtualenv)
+    concurrency = lazy_property(int)
 
     def __init__(self, project_name, worker_name, work_dir=None,
-                 broker=None, virtualenv=None, **kw):
+                 broker=None, virtualenv=None, concurrency=-1, **kw):
         super(Celery, self).__init__(**kw)
         self.project_name = project_name
         self.work_dir = work_dir
         self.worker_name = worker_name
         self.broker = broker
         self.virtualenv = virtualenv
+        self.concurrency = concurrency
 
     def __run(self, func):
         if self.virtualenv:
@@ -41,10 +43,15 @@ class Celery(service.Service):
             ext += '--broker=amqp://{}:{}@{}:{}/{} '.format(
                 self.broker.user, self.broker.password,
                 self.broker.hostname, self.broker.port, self.broker.vhost)
+        concurrency = 1
+        if self.concurrency > 0:
+            concurrency = self.concurrency
         return ('celery multi start {worker} -A {proj} --loglevel=INFO '
+                '--concurrency={concurrency} '
                 '--pidfile="/tmp/celery_{worker}.pid" '
-                '--logfile="/var/log/celery-{worker}.log" {ext}'.format(
-                    worker=self.worker_name, proj=self.project_name, ext=ext
+                '--logfile="/tmp/celery-{worker}.log" {ext}'.format(
+                    worker=self.worker_name, proj=self.project_name, ext=ext,
+                    concurrency=concurrency,
                 ))
 
     def start(self):
