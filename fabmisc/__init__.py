@@ -22,5 +22,4 @@ from .munin import *  # NOQA
 from .cron import *  # NOQA
 from .celery import *  # NOQA
 from .buildbot import *  # NOQA
-from .docker import *  # NOQA
 from .droneio import *  # NOQA

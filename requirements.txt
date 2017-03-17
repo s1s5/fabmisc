@@ -1,3 +1,5 @@
 fabric
 fabtools
 jinja2
+docker
+docker-compose
